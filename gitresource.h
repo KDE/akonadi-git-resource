@@ -36,7 +36,8 @@ class GitResource : public Akonadi::ResourceBase, public Akonadi::AgentBase::Obs
 
   public Q_SLOTS:
     virtual void configure( WId windowId );
-    void handleThreadFinished();
+    void handleGetAllFinished();
+    void handleGetOneFinished();
 
   protected:
     void retrieveCollections();

@@ -59,17 +59,21 @@ Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commi
   item.setMimeType( KMime::Message::mimeType() );
 
   KMime::Message *message = new KMime::Message();
+  KMime::Headers::ContentType *ct = message->contentType();
+  ct->setMimeType( "text/plain" );
+  message->contentTransferEncoding()->clear();
   message->from()->fromUnicodeString( commit.author, "utf-8" );
   message->to()->fromUnicodeString( "iamsergio@gmail.com", "utf-8" ); // TODO: TO
   // message->cc()->fromUnicodeString( "some@mailaddy.com", "utf-8" ); // parse CCMAIL:
-  //message->date()->setDateTime( KDateTime::currentLocalDateTime() ); // TODO: COMMIT date
+  message->date()->setDateTime( KDateTime( commit.dateTime ) );
   message->subject()->fromUnicodeString( "My Subject", "utf-8" );
   item.setPayload( KMime::Message::Ptr( message ) );
 
-  KMime::Content *body = new KMime::Content();
-  body->contentType()->setMimeType( "text/plain" );
-  body->setBody( commit.message );
-  message->addContent( body );
+  message->contentType()->setMimeType( "text/plain" );
+  message->setBody( commit.message );
+  item.setRemoteId( commit.sha1 );
+
+  message->assemble();
 
   return item;
 }
@@ -123,8 +127,8 @@ void GitResource::retrieveCollections()
 void GitResource::retrieveItems( const Akonadi::Collection &collection )
 {
   if ( !d->_thread ) {
-    d->_thread = new GitThread( d->mSettings->repository() );
-    connect( d->_thread, SIGNAL(finished()), SLOT(handleThreadFinished()) );
+    d->_thread = new GitThread( d->mSettings->repository(), GitThread::GetAllCommits );
+    connect( d->_thread, SIGNAL(finished()), SLOT(handleGetAllFinished()) );
     emit status( Running, i18n( "Retrieving items..." ) );
     d->_thread->start();
   } else {
@@ -134,10 +138,22 @@ void GitResource::retrieveItems( const Akonadi::Collection &collection )
 
 bool GitResource::retrieveItem( const Item &item, const QSet<QByteArray> &parts )
 {
-  return true;
+  Q_UNUSED( parts );
+  if ( !d->_thread ) {
+    d->_thread = new GitThread( d->mSettings->repository(), GitThread::GetOneCommit,
+                                item.remoteId() );
+    connect( d->_thread, SIGNAL(finished()), SLOT(handleGetOneFinished()) );
+    emit status( Running, i18n( "Retrieving item..." ) );
+    d->_thread->setProperty( "item", QVariant::fromValue<Akonadi::Item>( item ) );
+    d->_thread->start();
+    return true;
+  } else {
+    cancelTask( i18n( "A retrieveItem() task is already running." ) );
+    return false;
+  }
 }
 
-void GitResource::handleThreadFinished()
+void GitResource::handleGetAllFinished()
 {
   d->_thread->deleteLater();
   emit status( Idle, i18n( "Ready" ) );
@@ -146,7 +162,6 @@ void GitResource::handleThreadFinished()
     const QVector<GitThread::Commit> commits = d->_thread->commits();
     const QDateTime currentDateTime = QDateTime::currentDateTime();
     foreach( const GitThread::Commit &commit, commits ) {
-
       if ( commit.dateTime.secsTo( currentDateTime ) < 3600 * 24 * 30 ) { //TODO: make configurable
         items << d->commitToItem( commit );
       }
@@ -154,6 +169,23 @@ void GitResource::handleThreadFinished()
     itemsRetrieved( items ); // TODO: make it incremental?
   } else {
     cancelTask( i18n( "Error while doing retrieveItems(): %s ", d->_thread->lastErrorString() ) );
+  }
+  d->_thread = 0;
+}
+
+void GitResource::handleGetOneFinished()
+{
+  d->_thread->deleteLater();
+  emit status( Idle, i18n( "Ready" ) );
+  if ( d->_thread->lastErrorCode() == GitThread::ResultSuccess ) {
+    const QVector<GitThread::Commit> commits = d->_thread->commits();
+    Q_ASSERT( commits.count() == 1 );
+    const GitThread::Commit commit = commits.first();
+    Akonadi::Item item( d->_thread->property( "item" ).value<Akonadi::Item>() );
+    item.setPayload<KMime::Message::Ptr>( d->commitToItem( commit ).payload<KMime::Message::Ptr>() );
+    itemRetrieved( item );
+  } else {
+    cancelTask( i18n( "Error while doing retrieveItem(): %s ", d->_thread->lastErrorString() ) );
   }
   d->_thread = 0;
 }
