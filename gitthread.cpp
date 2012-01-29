@@ -66,9 +66,12 @@ void GitThread::run()
 
     const char *cmsg = git_commit_message( wcommit );
     const git_signature *cauth = git_commit_author( wcommit );
+    git_time_t time = git_commit_time( wcommit );
+
     Commit commit;
     commit.author = QLatin1String( cauth->email );
     commit.message = QByteArray( cmsg );
+    commit.dateTime = QDateTime::fromMSecsSinceEpoch( time * 1000 );
     m_commits << commit;
     delete cmsg;
     delete cauth;

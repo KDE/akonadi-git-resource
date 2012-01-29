@@ -144,8 +144,12 @@ void GitResource::handleThreadFinished()
   if ( d->_thread->lastErrorCode() == GitThread::ResultSuccess ) {
     Akonadi::Item::List items;
     const QVector<GitThread::Commit> commits = d->_thread->commits();
+    const QDateTime currentDateTime = QDateTime::currentDateTime();
     foreach( const GitThread::Commit &commit, commits ) {
-      items << d->commitToItem( commit );
+
+      if ( commit.dateTime.secsTo( currentDateTime ) < 3600 * 24 * 30 ) { //TODO: make configurable
+        items << d->commitToItem( commit );
+      }
     }
     itemsRetrieved( items ); // TODO: make it incremental?
   } else {

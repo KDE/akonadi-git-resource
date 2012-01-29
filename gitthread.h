@@ -1,6 +1,7 @@
 #include <QThread>
 #include <QString>
 #include <QVector>
+#include <QDateTime>
 
 #ifndef AKONADI_GIT_THREAD_H_
 #define AKONADI_GIT_THREAD_H_
@@ -22,6 +23,7 @@ public:
   struct Commit {
     QString author;
     QByteArray message;
+    QDateTime dateTime;
   };
 
   GitThread( const QString &path, QObject * parent = 0 );
