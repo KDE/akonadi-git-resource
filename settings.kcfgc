@@ -1,0 +1,8 @@
+File=gitresource.kcfg
+ClassName=GitSettings
+Mutators=true
+ItemAccessors=true
+SetUserTexts=true
+Singleton=false
+#IncludeFiles=
+GlobalEnums=true

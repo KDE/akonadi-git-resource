@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Git Resource
+Type=AkonadiResource
+Exec=akonadi_git_resource
+Icon=Git
+
+X-Akonadi-MimeTypes=message/rfc822
+X-Akonadi-Capabilities=Resource
+X-Akonadi-Identifier=akonadi_git_resource
+X-Akonadi-LaunchMethod=AgentLauncher
