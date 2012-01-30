@@ -38,6 +38,7 @@ class GitResource : public Akonadi::ResourceBase, public Akonadi::AgentBase::Obs
     virtual void configure( WId windowId );
     void handleGetAllFinished();
     void handleGetOneFinished();
+    void handleGetDiffFinished();
 
   protected:
     void retrieveCollections();

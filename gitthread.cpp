@@ -1,6 +1,10 @@
 #include "gitthread.h"
 
 #include <KDE/KLocale>
+#include <KProcess>
+
+#include <QDir>
+#include <QDebug>
 
 #include <git2/oid.h>
 #include <git2/errors.h>
@@ -57,6 +61,8 @@ void GitThread::run()
     getAllCommits();
   else if ( m_type == GitThread::GetOneCommit )
     getOneCommit();
+  else if ( m_type == GitThread::GetDiff )
+    getDiff();
   else
     Q_ASSERT( false );
 }
@@ -155,8 +161,28 @@ GitThread::ResultCode GitThread::lastErrorCode() const
   return ResultThreadStillRunning;
 }
 
-
 QVector<GitThread::Commit> GitThread::commits() const
 {
   return m_commits;
+}
+
+void GitThread::getDiff()
+{
+  QProcess *process = new QProcess();
+  QStringList args;
+  process->setWorkingDirectory( m_path );
+  process->start( QLatin1String( "git show " ) + m_sha1 );
+  process->waitForFinished();
+  m_diff = process->readAllStandardOutput();
+  if ( process->exitCode() != 0 ) {
+    m_resultCode = ResultErrorDiffing;
+    m_errorString = i18n( "Error obtaining diff: %1", QString::number( process->exitCode() ) );
+  } else {
+    m_resultCode = ResultSuccess;
+  }
+}
+
+QByteArray GitThread::diff() const
+{
+  return m_diff;
 }

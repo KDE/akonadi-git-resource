@@ -41,19 +41,23 @@ class GitResource::Private {
 public:
   Private( GitResource *qq ) : mSettings( new GitSettings( componentData().config() ) )
                              , _thread( 0 )
+                             , _diffThread( 0 )
                              , q( qq )
   {
   }
 
-  Akonadi::Item commitToItem( const GitThread::Commit &commit ) const;
+  Akonadi::Item commitToItem( const GitThread::Commit &commit,
+                              const QByteArray &diff = QByteArray() ) const;
 
   GitSettings *mSettings;
   GitThread   *_thread;
+  GitThread   *_diffThread;
 private:
   GitResource *q;
 };
 
-Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commit ) const
+Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commit,
+                                                  const QByteArray &body ) const
 {
   Item item;
   item.setMimeType( KMime::Message::mimeType() );
@@ -62,18 +66,25 @@ Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commi
   KMime::Headers::ContentType *ct = message->contentType();
   ct->setMimeType( "text/plain" );
   message->contentTransferEncoding()->clear();
+  const QByteArray firstLine = commit.message.split('\n').first();
+
+  message->subject()->fromUnicodeString( firstLine, "utf-8" );
   message->from()->fromUnicodeString( commit.author, "utf-8" );
   message->to()->fromUnicodeString( "iamsergio@gmail.com", "utf-8" ); // TODO: TO
   // message->cc()->fromUnicodeString( "some@mailaddy.com", "utf-8" ); // parse CCMAIL:
   message->date()->setDateTime( KDateTime( commit.dateTime ) );
-  message->subject()->fromUnicodeString( "My Subject", "utf-8" );
   item.setPayload( KMime::Message::Ptr( message ) );
 
   message->contentType()->setMimeType( "text/plain" );
-  message->setBody( commit.message );
-  item.setRemoteId( commit.sha1 );
 
+  if ( !body.isEmpty() ) {
+    message->setBody( body );
+  }
+
+  item.setRemoteId( commit.sha1 );
   message->assemble();
+
+  qWarning() << "DEBUG " << item.availablePayloadParts() << item.loadedPayloadParts();
 
   return item;
 }
@@ -175,20 +186,42 @@ void GitResource::handleGetAllFinished()
 
 void GitResource::handleGetOneFinished()
 {
-  d->_thread->deleteLater();
   emit status( Idle, i18n( "Ready" ) );
   if ( d->_thread->lastErrorCode() == GitThread::ResultSuccess ) {
-    const QVector<GitThread::Commit> commits = d->_thread->commits();
-    Q_ASSERT( commits.count() == 1 );
-    const GitThread::Commit commit = commits.first();
     Akonadi::Item item( d->_thread->property( "item" ).value<Akonadi::Item>() );
-    item.setPayload<KMime::Message::Ptr>( d->commitToItem( commit ).payload<KMime::Message::Ptr>() );
-    itemRetrieved( item );
+    d->_diffThread = new GitThread( d->mSettings->repository(), GitThread::GetDiff, item.remoteId() );
+    connect( d->_diffThread, SIGNAL(finished()), SLOT(handleGetDiffFinished()) );
+    d->_diffThread->start();
   } else {
     cancelTask( i18n( "Error while doing retrieveItem(): %s ", d->_thread->lastErrorString() ) );
   }
-  d->_thread = 0;
 }
+
+void GitResource::handleGetDiffFinished()
+{
+  d->_diffThread->deleteLater();
+  d->_thread->deleteLater();
+
+  const QVector<GitThread::Commit> commits = d->_thread->commits();
+  Q_ASSERT( commits.count() == 1 );
+  const GitThread::Commit commit = commits.first();
+
+  if ( d->_diffThread->lastErrorCode() == GitThread::ResultSuccess ) {
+    Akonadi::Item item( d->_thread->property( "item" ).value<Akonadi::Item>() );
+    const QByteArray diff = d->_diffThread->diff();
+    Q_ASSERT( !diff.isEmpty() );
+    item.setPayload<KMime::Message::Ptr>( d->commitToItem( commit,
+                                                           diff ).payload<KMime::Message::Ptr>() );
+    itemRetrieved( item );
+  } else {
+    qWarning() << "DEBUG " << d->_diffThread->lastErrorString();
+    cancelTask( d->_diffThread->lastErrorString() );
+  }
+
+  d->_thread = 0;
+  d->_diffThread = 0;
+}
+
 
 AKONADI_AGENT_FACTORY( GitResource, akonadi_git_resource )
 

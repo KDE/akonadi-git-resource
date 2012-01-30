@@ -14,7 +14,8 @@ public:
 
   enum TaskType {
     GetAllCommits,
-    GetOneCommit
+    GetOneCommit,
+    GetDiff
   };
 
   enum ResultCode {
@@ -25,7 +26,8 @@ public:
     ResultErrorRevwalkNew,
     ResultErrorRepositoryHead,
     ResultThreadStillRunning,
-    ResultNothingToFetch
+    ResultNothingToFetch,
+    ResultErrorDiffing
   };
 
   struct Commit {
@@ -44,14 +46,17 @@ public:
   QString lastErrorString() const;
   ResultCode lastErrorCode() const;
   QVector<Commit> commits() const;
+  QByteArray diff() const;
 
 private:
   bool openRepository( git_repository ** );
   void getAllCommits();
   void getOneCommit();
+  void getDiff();
 
 private:
   QVector<Commit> m_commits;
+  QByteArray m_diff;
   QString m_path;
   QString m_errorString;
   ResultCode m_resultCode;
