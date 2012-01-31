@@ -62,7 +62,7 @@ public:
   GitThread   *m_thread;
   GitThread   *m_diffThread;
   QFileSystemWatcher *m_watcher;
-  FlagDatabase _flagsDatabase;
+  FlagDatabase m_flagsDatabase;
   QByteArray m_currentHead;
 private:
   GitResource *q;
@@ -106,7 +106,7 @@ Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commi
   item.setRemoteId( commit.sha1 );
   message->assemble();
 
-  item.setFlags( _flagsDatabase.flags( commit.sha1 ) );
+  item.setFlags( m_flagsDatabase.flags( commit.sha1 ) );
   return item;
 }
 
@@ -156,7 +156,7 @@ void GitResource::configure( WId windowId )
     emit configurationDialogAccepted();
 
     if ( d->mSettings->repository() != oldRepo ) {
-      d->_flagsDatabase.clear();
+      d->m_flagsDatabase.clear();
     }
 
     d->setupWatcher();
@@ -275,9 +275,9 @@ void GitResource::itemChanged( const Akonadi::Item &item, const QSet<QByteArray>
 {
   Q_UNUSED( parts );
   const QString sha1 = item.remoteId();
-  d->_flagsDatabase.deleteFlags( sha1 );
+  d->m_flagsDatabase.deleteFlags( sha1 );
   foreach( const QByteArray &flag, item.flags() ) {
-    d->_flagsDatabase.insertFlag( sha1, QString::fromUtf8( flag ) );
+    d->m_flagsDatabase.insertFlag( sha1, QString::fromUtf8( flag ) );
   }
   // TODO: error handling
   changeCommitted( item );
