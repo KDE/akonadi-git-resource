@@ -155,6 +155,7 @@ void GitResource::retrieveCollections()
 
 void GitResource::retrieveItems( const Akonadi::Collection &collection )
 {
+  Q_UNUSED( collection );
   if ( !d->_thread ) {
     d->_thread = new GitThread( d->mSettings->repository(), GitThread::GetAllCommits );
     connect( d->_thread, SIGNAL(finished()), SLOT(handleGetAllFinished()) );
@@ -242,6 +243,7 @@ void GitResource::handleGetDiffFinished()
 
 void GitResource::itemChanged( const Akonadi::Item &item, const QSet<QByteArray> &parts )
 {
+  Q_UNUSED( parts );
   const QString sha1 = item.remoteId();
   d->_flagsDatabase.deleteFlags( sha1 );
   foreach( const QByteArray &flag, item.flags() ) {
