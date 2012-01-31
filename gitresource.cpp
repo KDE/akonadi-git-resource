@@ -31,6 +31,8 @@
 #include <akonadi/dbusconnectionpool.h>
 #include <Akonadi/EntityDisplayAttribute>
 #include <KMime/Message>
+#include <KPIMIdentities/Identity>
+#include <KPIMIdentities/IdentityManager>
 
 #include <KCalCore/Event>
 #include <KLocale>
@@ -87,7 +89,7 @@ Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commi
 
   message->subject()->fromUnicodeString( firstLine, "utf-8" );
   message->from()->fromUnicodeString( commit.author, "utf-8" );
-  message->to()->fromUnicodeString( "iamsergio@gmail.com", "utf-8" ); // TODO: TO
+  message->to()->fromUnicodeString( mSettings->identity(), "utf-8" );
   // message->cc()->fromUnicodeString( "some@mailaddy.com", "utf-8" ); // parse CCMAIL:
   message->date()->setDateTime( KDateTime( commit.dateTime ) );
   item.setPayload( KMime::Message::Ptr( message ) );
@@ -121,6 +123,13 @@ GitResource::GitResource( const QString &id )
   //load();
   if ( !d->mSettings->from().isValid() ) {
     d->mSettings->setFrom( QDateTime::currentDateTime().addDays( -30 ) );
+    d->mSettings->writeConfig();
+  }
+
+  if ( d->mSettings->identity().isEmpty() ) {
+    KPIMIdentities::IdentityManager identManager;
+    const KPIMIdentities::Identity identity = identManager.defaultIdentity();
+    d->mSettings->setIdentity( identity.fullEmailAddr() );
     d->mSettings->writeConfig();
   }
 }

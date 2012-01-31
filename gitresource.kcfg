@@ -18,5 +18,9 @@
       <label>Path to .git directory</label>
       <default></default>
     </entry>
+    <entry name="Identity" type="String">
+      <label>Default To: for e-mails</label>
+      <default></default>
+    </entry>
   </group>
 </kcfg>
