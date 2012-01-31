@@ -1,4 +1,5 @@
 #include "gitthread.h"
+#include "cheatingutils.h"
 
 #include <KDE/KLocale>
 #include <KProcess>
@@ -32,18 +33,6 @@ static GitThread::Commit parseCommit( git_commit *wcommit )
   delete cauth;
 
   return commit;
-}
-
-// returns the SHA1 for origin/master
-static QByteArray getRemoteHead( const QString repoPath )
-{
-  QByteArray sha1;
-  QFile file( repoPath + QLatin1String( "/refs/remotes/origin/master" ) );
-  if ( file.open( QIODevice::ReadOnly | QIODevice::Text ) ) {
-    sha1 = file.readLine().trimmed();
-  }
-
-  return sha1;
 }
 
 GitThread::GitThread( const QString &path, TaskType type, const QString &sha1,

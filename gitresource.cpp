@@ -24,6 +24,7 @@
 #include "configdialog.h"
 #include "gitthread.h"
 #include "flagdatabase.h"
+#include "cheatingutils.h"
 
 #include <akonadi/agentfactory.h>
 #include <Akonadi/ItemFetchScope>
@@ -62,6 +63,7 @@ public:
   GitThread   *_diffThread;
   QFileSystemWatcher *_watcher;
   FlagDatabase _flagsDatabase;
+  QByteArray m_currentHead;
 private:
   GitResource *q;
 };
@@ -133,6 +135,8 @@ GitResource::GitResource( const QString &id )
     d->mSettings->setIdentity( identity.fullEmailAddr() );
     d->mSettings->writeConfig();
   }
+
+  d->m_currentHead = getRemoteHead( d->mSettings->repository() + QLatin1String( "/.git/" ) );
 }
 
 GitResource::~GitResource()
@@ -281,10 +285,14 @@ void GitResource::itemChanged( const Akonadi::Item &item, const QSet<QByteArray>
 
 void GitResource::handleRepositoryChanged()
 {
-  Collection collection;
-  collection.setRemoteId( QLatin1String( "master" ) );
-  invalidateCache( collection );
-  synchronize();
+  const QByteArray newHead = getRemoteHead( d->mSettings->repository() + QLatin1String( "/.git/" ) );
+  if ( newHead != d->m_currentHead && !newHead.isEmpty() ) {
+    d->m_currentHead = newHead;
+    Collection collection;
+    collection.setRemoteId( QLatin1String( "master" ) );
+    invalidateCache( collection );
+    synchronize();
+  }
 }
 
 

@@ -1,3 +1,6 @@
+#ifndef AKONADI_GIT_THREAD_H_
+#define AKONADI_GIT_THREAD_H_
+
 #include <QThread>
 #include <QString>
 #include <QVector>
@@ -5,8 +8,6 @@
 
 #include <git2/repository.h>
 
-#ifndef AKONADI_GIT_THREAD_H_
-#define AKONADI_GIT_THREAD_H_
 
 class GitThread : public QThread {
   Q_OBJECT
