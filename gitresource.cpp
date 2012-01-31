@@ -233,7 +233,7 @@ void GitResource::handleGetDiffFinished()
                                                            diff ).payload<KMime::Message::Ptr>() );
     itemRetrieved( item );
   } else {
-    qWarning() << "DEBUG " << d->_diffThread->lastErrorString();
+    kError() << "DEBUG " << d->_diffThread->lastErrorString();
     cancelTask( d->_diffThread->lastErrorString() );
   }
 
