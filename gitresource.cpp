@@ -137,8 +137,14 @@ void GitResource::configure( WId windowId )
   if ( windowId )
     KWindowSystem::setMainWindow( &dlg, windowId );
 
+  const QString oldRepo = d->mSettings->repository();
   if ( dlg.exec() ) {
     emit configurationDialogAccepted();
+
+    if ( d->mSettings->repository() != oldRepo ) {
+      d->_flagsDatabase.clear();
+    }
+
     d->setupWatcher();
     Collection collection;
     collection.setRemoteId( QLatin1String( "master" ) );
