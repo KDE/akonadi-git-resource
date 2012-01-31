@@ -27,7 +27,8 @@ public:
     ResultErrorRepositoryHead,
     ResultThreadStillRunning,
     ResultNothingToFetch,
-    ResultErrorDiffing
+    ResultErrorDiffing,
+    ResultErrorInvalidHead,
   };
 
   struct Commit {

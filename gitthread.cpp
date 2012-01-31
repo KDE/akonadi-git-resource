@@ -34,6 +34,18 @@ static GitThread::Commit parseCommit( git_commit *wcommit )
   return commit;
 }
 
+// returns the SHA1 for origin/master
+static QByteArray getRemoteHead( const QString repoPath )
+{
+  QByteArray sha1;
+  QFile file( repoPath + QLatin1String( "/refs/remotes/origin/master" ) );
+  if ( file.open( QIODevice::ReadOnly | QIODevice::Text ) ) {
+    sha1 = file.readLine().trimmed();
+  }
+
+  return sha1;
+}
+
 GitThread::GitThread( const QString &path, TaskType type, const QString &sha1,
                       QObject *parent ) : QThread( parent )
                                         , m_path( path )
@@ -73,14 +85,6 @@ void GitThread::getAllCommits()
   if ( !openRepository( &repository ) )
     return;
 
-  git_reference *head;
-  if ( git_repository_head( &head, repository ) != GIT_SUCCESS ) {
-    m_resultCode = ResultErrorRepositoryHead;
-    m_errorString = "git_repository_head error";
-    git_repository_free( repository );
-    return;
-  }
-
   git_revwalk *walk_this_way;
   if ( git_revwalk_new( &walk_this_way, repository ) != GIT_SUCCESS ) {
     m_resultCode = ResultErrorRevwalkNew;
@@ -91,19 +95,44 @@ void GitThread::getAllCommits()
 
   git_revwalk_sorting( walk_this_way, GIT_SORT_TOPOLOGICAL | GIT_SORT_REVERSE );
 
-  int error = 0;
+  //git_reference *head;
+  const QByteArray remoteHeadSha1 = getRemoteHead( m_path );
+
+  if ( remoteHeadSha1.isEmpty() ) {
+    m_resultCode = ResultErrorInvalidHead;
+    m_errorString = "Can't find head for origin/master";
+    git_repository_free( repository );
+    return;
+  }
+  /*
+  if ( git_repository_head( &head, repository ) != GIT_SUCCESS ) {
+    m_resultCode = ResultErrorRepositoryHead;
+    m_errorString = "git_repository_head error";
+    git_repository_free( repository );
+    return;
+  }
   const git_oid *head_oid = git_reference_oid( head );
-  if ( ( error = git_revwalk_push( walk_this_way, head_oid ) ) != GIT_SUCCESS ) {
+  */
+
+  git_oid head_oid;
+  if ( git_oid_fromstr( &head_oid, remoteHeadSha1.data() ) != GIT_SUCCESS ) {
+    m_resultCode = ResultErrorInvalidHead;
+    m_errorString = "Can't find head for origin/master";
+    git_repository_free( repository );
+    return;
+  }
+
+  int error = 0;
+  if ( ( error = git_revwalk_push( walk_this_way, &head_oid ) ) != GIT_SUCCESS ) {
     m_resultCode = ResultErrorRevwalkPush;
     m_errorString = "git_revwalk_push error: " + QString::number( error );
     git_repository_free( repository );
     return;
   }
 
-  git_oid head_oid2 = *head_oid;
-  while( ( git_revwalk_next( &head_oid2, walk_this_way ) ) == GIT_SUCCESS ) {
+  while( ( git_revwalk_next( &head_oid, walk_this_way ) ) == GIT_SUCCESS ) {
     git_commit *wcommit = 0;
-    if ( git_commit_lookup( &wcommit, repository, &head_oid2 ) != GIT_SUCCESS ) {
+    if ( git_commit_lookup( &wcommit, repository, &head_oid ) != GIT_SUCCESS ) {
       m_resultCode = ResultErrorCommitLookup;
       m_errorString = "git_commit_lookup error";
       git_repository_free( repository );
