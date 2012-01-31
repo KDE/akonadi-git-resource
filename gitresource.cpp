@@ -23,6 +23,7 @@
 #include "settingsadaptor.h"
 #include "configdialog.h"
 #include "gitthread.h"
+#include "flagdatabase.h"
 
 #include <akonadi/agentfactory.h>
 #include <Akonadi/ItemFetchScope>
@@ -35,6 +36,8 @@
 #include <KLocale>
 #include <KWindowSystem>
 
+#include <QFileSystemWatcher>
+
 using namespace Akonadi;
 
 class GitResource::Private {
@@ -42,19 +45,33 @@ public:
   Private( GitResource *qq ) : mSettings( new GitSettings( componentData().config() ) )
                              , _thread( 0 )
                              , _diffThread( 0 )
+                             , _watcher( new QFileSystemWatcher( qq ) )
                              , q( qq )
   {
+    connect( _watcher, SIGNAL(fileChanged(QString)), q, SLOT(handleRepositoryChanged()) );
+    setupWatcher();
   }
 
+  void setupWatcher();
   Akonadi::Item commitToItem( const GitThread::Commit &commit,
                               const QByteArray &diff = QByteArray() ) const;
 
   GitSettings *mSettings;
   GitThread   *_thread;
   GitThread   *_diffThread;
+  QFileSystemWatcher *_watcher;
+  FlagDatabase _flagsDatabase;
 private:
   GitResource *q;
 };
+
+void GitResource::Private::setupWatcher()
+{
+  //if ( !mSettings->repository().isEmpty() ) {
+    //_watcher->addPath( mSettings->repository() + QLatin1String( "/refs/heads/master" ) );
+    _watcher->addPath( "/data/sources/kde/trunk/kde/kdepim/.git/" + QLatin1String( "/refs/heads/master" ) ); //TODO
+  //}
+}
 
 Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commit,
                                                   const QByteArray &body ) const
@@ -112,12 +129,14 @@ GitResource::~GitResource()
 
 void GitResource::configure( WId windowId )
 {
+  // TODO clear the db when the repo changes
   ConfigDialog dlg( d->mSettings );
   if ( windowId )
     KWindowSystem::setMainWindow( &dlg, windowId );
 
   if ( dlg.exec() ) {
     emit configurationDialogAccepted();
+    d->setupWatcher();
   } else {
     emit configurationDialogRejected();
   }
@@ -220,6 +239,25 @@ void GitResource::handleGetDiffFinished()
 
   d->_thread = 0;
   d->_diffThread = 0;
+}
+
+void GitResource::itemChanged( const Akonadi::Item &item, const QSet<QByteArray> &parts )
+{
+  const QString sha1 = item.remoteId();
+  d->_flagsDatabase.deleteFlags( sha1 );
+  foreach( const QByteArray &flag, item.flags() ) {
+    d->_flagsDatabase.insertFlag( sha1, QString::fromUtf8( flag ) );
+  }
+  // TODO: error handling
+  changeCommitted( item );
+}
+
+void GitResource::handleRepositoryChanged()
+{
+  Collection collection;
+  collection.setRemoteId( QLatin1String( "master" ) );
+  invalidateCache( collection );
+  synchronize();
 }
 
 

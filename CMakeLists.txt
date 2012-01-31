@@ -17,7 +17,7 @@ add_definitions (-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KDE4_ENABLE_EXCEPTIONS}" )
 
-set( gitresource_SRCS gitresource.cpp configdialog.cpp gitthread.cpp )
+set( gitresource_SRCS gitresource.cpp configdialog.cpp gitthread.cpp flagdatabase.cpp )
 
 include_directories(
   ${CMAKE_SOURCE_DIR}
@@ -61,6 +61,7 @@ target_link_libraries(akonadi_git_resource
   ${KDEPIMLIBS_KMIME_LIBS}
   ${KDE4_KIO_LIBS}
   git2
+  QtSql
 )
 
 install( TARGETS akonadi_git_resource DESTINATION ${PLUGIN_INSTALL_DIR}/ )

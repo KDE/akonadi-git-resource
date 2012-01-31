@@ -35,7 +35,7 @@ class GitResource : public Akonadi::ResourceBase, public Akonadi::AgentBase::Obs
     ~GitResource();
 
   public Q_SLOTS:
-    virtual void configure( WId windowId );
+    /**reimp*/ void configure( WId windowId );
     void handleGetAllFinished();
     void handleGetOneFinished();
     void handleGetDiffFinished();
@@ -44,7 +44,10 @@ class GitResource : public Akonadi::ResourceBase, public Akonadi::AgentBase::Obs
     void retrieveCollections();
     void retrieveItems( const Akonadi::Collection &collection );
     bool retrieveItem( const Akonadi::Item &item, const QSet<QByteArray> &parts );
+    /**reimp*/void itemChanged( const Akonadi::Item &item, const QSet<QByteArray> &parts );
 
+  private Q_SLOTS:
+    void handleRepositoryChanged();
   private:
     class Private;
     Private *const d;
