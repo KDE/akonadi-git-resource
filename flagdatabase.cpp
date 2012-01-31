@@ -106,7 +106,7 @@ Akonadi::Item::Flags FlagDatabase::flags( const QString &sha1 ) const
   Akonadi::Item::Flags flags;
   QSqlQuery query( QString( "SELECT flag FROM flags WHERE sha1 = '%1'" ).arg( sha1 ) );
   while( query.next() ) {
-    flags << query.value( int(FlagColumn) ).toString().toUtf8();
+    flags << query.value( 0 ).toString().toUtf8();
   }
   return flags;
 }
