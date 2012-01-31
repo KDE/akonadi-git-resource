@@ -31,6 +31,8 @@ ConfigDialog::ConfigDialog( GitSettings *settings, QWidget *parent) :
   ui.setupUi( mainWidget() );
 
   ui.repository->setUrl( KUrl( mSettings->repository() ) );
+  ui.from->setDateTime( mSettings->from() );
+  ui.scripty->setChecked( mSettings->scripty() );
 
   connect( this, SIGNAL(okClicked()), this, SLOT(save()) );
   show();
@@ -38,6 +40,8 @@ ConfigDialog::ConfigDialog( GitSettings *settings, QWidget *parent) :
 
 void ConfigDialog::save()
 {
+  mSettings->setFrom( ui.from->dateTime() );
+  mSettings->setScripty( ui.scripty->checkState() == Qt::Checked );
   mSettings->setRepository( ui.repository->url().path() );
   mSettings->writeConfig();
 }

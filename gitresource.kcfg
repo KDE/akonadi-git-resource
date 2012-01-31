@@ -6,6 +6,14 @@
       http://www.kde.org/standards/kcfg/1.0/kcfg.xsd" >
   <kcfgfile arg="true"/>
   <group name="General">
+    <entry name="Scripty" type="Bool">
+      <label>Include scripty commits</label>
+      <default>false</default>
+    </entry>
+    <entry name="From" type="DateTime">
+      <label>Only commits older than this date</label>
+      <default></default>
+    </entry>
     <entry name="Repository" type="Path">
       <label>Path to .git directory</label>
       <default></default>

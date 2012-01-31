@@ -119,6 +119,10 @@ GitResource::GitResource( const QString &id )
                                                          QDBusConnection::ExportAdaptors );
   //connect( this, SIGNAL(reloadConfiguration()), SLOT(load()) );
   //load();
+  if ( !d->mSettings->from().isValid() ) {
+    d->mSettings->setFrom( QDateTime::currentDateTime().addDays( -30 ) );
+    d->mSettings->writeConfig();
+  }
 }
 
 GitResource::~GitResource()
@@ -136,6 +140,10 @@ void GitResource::configure( WId windowId )
   if ( dlg.exec() ) {
     emit configurationDialogAccepted();
     d->setupWatcher();
+    Collection collection;
+    collection.setRemoteId( QLatin1String( "master" ) );
+    invalidateCache( collection );
+    synchronize();
   } else {
     emit configurationDialogRejected();
   }
@@ -192,7 +200,9 @@ void GitResource::handleGetAllFinished()
     const QVector<GitThread::Commit> commits = d->_thread->commits();
     const QDateTime currentDateTime = QDateTime::currentDateTime();
     foreach( const GitThread::Commit &commit, commits ) {
-      if ( commit.dateTime.secsTo( currentDateTime ) < 3600 * 24 * 30 ) { //TODO: make configurable
+      const bool fromScripty = commit.author == QLatin1String( "scripty@kde.org" );
+      if ( commit.dateTime.date() >= d->mSettings->from().date() &&
+           !( fromScripty && !d->mSettings->scripty() ) ) {
         items << d->commitToItem( commit );
       }
     }
