@@ -2,7 +2,7 @@
 Name=Git Resource
 Type=AkonadiResource
 Exec=akonadi_git_resource
-Icon=Git
+Icon=git
 
 X-Akonadi-MimeTypes=message/rfc822
 X-Akonadi-Capabilities=Resource
