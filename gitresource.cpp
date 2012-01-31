@@ -101,8 +101,7 @@ Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commi
   item.setRemoteId( commit.sha1 );
   message->assemble();
 
-  qWarning() << "DEBUG " << item.availablePayloadParts() << item.loadedPayloadParts();
-
+  item.setFlags( _flagsDatabase.flags( commit.sha1 ) );
   return item;
 }
 

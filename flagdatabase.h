@@ -20,6 +20,7 @@
 #ifndef FLAGDATABASE_H_
 #define FLAGDATABASE_H_
 
+#include <Akonadi/Item>
 #include <QString>
 
 class FlagDatabase {
@@ -31,6 +32,8 @@ public:
   bool deleteFlag( const QString &sha1, const QString &flag );
   bool deleteFlags( const QString &sha1 );
   bool exists( const QString sha1, const QString &flag ) const;
+  Akonadi::Item::Flags flags( const QString &sha1 ) const;
+
   bool clear();
 private:
   class Private;
