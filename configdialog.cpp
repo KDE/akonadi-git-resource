@@ -33,6 +33,7 @@ ConfigDialog::ConfigDialog( GitSettings *settings, QWidget *parent) :
   ui.repository->setUrl( KUrl( mSettings->repository() ) );
   ui.from->setDateTime( mSettings->from() );
   ui.scripty->setChecked( mSettings->scripty() );
+  ui.repository->setMode( KFile::Directory );
 
   connect( this, SIGNAL(okClicked()), this, SLOT(save()) );
   show();

@@ -41,7 +41,7 @@ GitThread::GitThread( const QString &path, TaskType type, const QString &sha1,
                                         , m_type( type )
                                         , m_sha1( sha1 )
 {
-  m_path = "/data/sources/kde/trunk/kde/kdepim/.git/"; // TODO
+  m_path = path + QLatin1String( "/.git/" );
   Q_ASSERT( !( type == GitThread::GetAllCommits && !sha1.isEmpty() ) );
 }
 
