@@ -48,7 +48,7 @@ public:
   Private( GitResource *qq ) : mSettings( new GitSettings( componentData().config() ) )
                              , _thread( 0 )
                              , _diffThread( 0 )
-                             , _watcher()
+                             , _watcher( 0 )
                              , q( qq )
   {
     setupWatcher();
