@@ -1,5 +1,6 @@
 build
 *~
+.kdev4
 settings.cpp
 settings.h
 CMakeCache.txt
