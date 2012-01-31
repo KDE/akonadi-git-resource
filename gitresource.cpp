@@ -47,10 +47,9 @@ public:
   Private( GitResource *qq ) : mSettings( new GitSettings( componentData().config() ) )
                              , _thread( 0 )
                              , _diffThread( 0 )
-                             , _watcher( new QFileSystemWatcher( qq ) )
+                             , _watcher()
                              , q( qq )
   {
-    connect( _watcher, SIGNAL(fileChanged(QString)), q, SLOT(handleRepositoryChanged()) );
     setupWatcher();
   }
 
@@ -69,10 +68,12 @@ private:
 
 void GitResource::Private::setupWatcher()
 {
-  //if ( !mSettings->repository().isEmpty() ) {
-    //_watcher->addPath( mSettings->repository() + QLatin1String( "/refs/heads/master" ) );
-    _watcher->addPath( "/data/sources/kde/trunk/kde/kdepim/.git/" + QLatin1String( "/refs/heads/master" ) ); //TODO
-  //}
+  delete _watcher;
+  _watcher = new QFileSystemWatcher( q );
+  connect( _watcher, SIGNAL(fileChanged(QString)), q, SLOT(handleRepositoryChanged()) );
+  if ( !mSettings->repository().isEmpty() ) {
+    _watcher->addPath( mSettings->repository() + QLatin1String( "/.git/refs/remotes/origin/master" ) );
+  }
 }
 
 Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commit,
