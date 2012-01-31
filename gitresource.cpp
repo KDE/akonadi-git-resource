@@ -46,9 +46,9 @@ using namespace Akonadi;
 class GitResource::Private {
 public:
   Private( GitResource *qq ) : mSettings( new GitSettings( componentData().config() ) )
-                             , _thread( 0 )
-                             , _diffThread( 0 )
-                             , _watcher( 0 )
+                             , m_thread( 0 )
+                             , m_diffThread( 0 )
+                             , m_watcher( 0 )
                              , q( qq )
   {
     setupWatcher();
@@ -59,9 +59,9 @@ public:
                               const QByteArray &diff = QByteArray() ) const;
 
   GitSettings *mSettings;
-  GitThread   *_thread;
-  GitThread   *_diffThread;
-  QFileSystemWatcher *_watcher;
+  GitThread   *m_thread;
+  GitThread   *m_diffThread;
+  QFileSystemWatcher *m_watcher;
   FlagDatabase _flagsDatabase;
   QByteArray m_currentHead;
 private:
@@ -70,11 +70,11 @@ private:
 
 void GitResource::Private::setupWatcher()
 {
-  delete _watcher;
-  _watcher = new QFileSystemWatcher( q );
-  connect( _watcher, SIGNAL(fileChanged(QString)), q, SLOT(handleRepositoryChanged()) );
+  delete m_watcher;
+  m_watcher = new QFileSystemWatcher( q );
+  connect( m_watcher, SIGNAL(fileChanged(QString)), q, SLOT(handleRepositoryChanged()) );
   if ( !mSettings->repository().isEmpty() ) {
-    _watcher->addPath( mSettings->repository() + QLatin1String( "/.git/refs/remotes/origin/master" ) );
+    m_watcher->addPath( mSettings->repository() + QLatin1String( "/.git/refs/remotes/origin/master" ) );
   }
 }
 
@@ -184,11 +184,11 @@ void GitResource::retrieveCollections()
 void GitResource::retrieveItems( const Akonadi::Collection &collection )
 {
   Q_UNUSED( collection );
-  if ( !d->_thread ) {
-    d->_thread = new GitThread( d->mSettings->repository(), GitThread::GetAllCommits );
-    connect( d->_thread, SIGNAL(finished()), SLOT(handleGetAllFinished()) );
+  if ( !d->m_thread ) {
+    d->m_thread = new GitThread( d->mSettings->repository(), GitThread::GetAllCommits );
+    connect( d->m_thread, SIGNAL(finished()), SLOT(handleGetAllFinished()) );
     emit status( Running, i18n( "Retrieving items..." ) );
-    d->_thread->start();
+    d->m_thread->start();
   } else {
     cancelTask( i18n( "A retrieveItems() task is already running." ) );
   }
@@ -197,13 +197,13 @@ void GitResource::retrieveItems( const Akonadi::Collection &collection )
 bool GitResource::retrieveItem( const Item &item, const QSet<QByteArray> &parts )
 {
   Q_UNUSED( parts );
-  if ( !d->_thread ) {
-    d->_thread = new GitThread( d->mSettings->repository(), GitThread::GetOneCommit,
+  if ( !d->m_thread ) {
+    d->m_thread = new GitThread( d->mSettings->repository(), GitThread::GetOneCommit,
                                 item.remoteId() );
-    connect( d->_thread, SIGNAL(finished()), SLOT(handleGetOneFinished()) );
+    connect( d->m_thread, SIGNAL(finished()), SLOT(handleGetOneFinished()) );
     emit status( Running, i18n( "Retrieving item..." ) );
-    d->_thread->setProperty( "item", QVariant::fromValue<Akonadi::Item>( item ) );
-    d->_thread->start();
+    d->m_thread->setProperty( "item", QVariant::fromValue<Akonadi::Item>( item ) );
+    d->m_thread->start();
     return true;
   } else {
     cancelTask( i18n( "A retrieveItem() task is already running." ) );
@@ -213,11 +213,11 @@ bool GitResource::retrieveItem( const Item &item, const QSet<QByteArray> &parts 
 
 void GitResource::handleGetAllFinished()
 {
-  d->_thread->deleteLater();
+  d->m_thread->deleteLater();
   emit status( Idle, i18n( "Ready" ) );
-  if ( d->_thread->lastErrorCode() == GitThread::ResultSuccess ) {
+  if ( d->m_thread->lastErrorCode() == GitThread::ResultSuccess ) {
     Akonadi::Item::List items;
-    const QVector<GitThread::Commit> commits = d->_thread->commits();
+    const QVector<GitThread::Commit> commits = d->m_thread->commits();
     const QDateTime currentDateTime = QDateTime::currentDateTime();
     foreach( const GitThread::Commit &commit, commits ) {
       const bool fromScripty = commit.author == QLatin1String( "scripty@kde.org" );
@@ -228,47 +228,47 @@ void GitResource::handleGetAllFinished()
     }
     itemsRetrieved( items ); // TODO: make it incremental?
   } else {
-    cancelTask( i18n( "Error while doing retrieveItems(): %s ", d->_thread->lastErrorString() ) );
+    cancelTask( i18n( "Error while doing retrieveItems(): %s ", d->m_thread->lastErrorString() ) );
   }
-  d->_thread = 0;
+  d->m_thread = 0;
 }
 
 void GitResource::handleGetOneFinished()
 {
   emit status( Idle, i18n( "Ready" ) );
-  if ( d->_thread->lastErrorCode() == GitThread::ResultSuccess ) {
-    Akonadi::Item item( d->_thread->property( "item" ).value<Akonadi::Item>() );
-    d->_diffThread = new GitThread( d->mSettings->repository(), GitThread::GetDiff, item.remoteId() );
-    connect( d->_diffThread, SIGNAL(finished()), SLOT(handleGetDiffFinished()) );
-    d->_diffThread->start();
+  if ( d->m_thread->lastErrorCode() == GitThread::ResultSuccess ) {
+    Akonadi::Item item( d->m_thread->property( "item" ).value<Akonadi::Item>() );
+    d->m_diffThread = new GitThread( d->mSettings->repository(), GitThread::GetDiff, item.remoteId() );
+    connect( d->m_diffThread, SIGNAL(finished()), SLOT(handleGetDiffFinished()) );
+    d->m_diffThread->start();
   } else {
-    cancelTask( i18n( "Error while doing retrieveItem(): %s ", d->_thread->lastErrorString() ) );
+    cancelTask( i18n( "Error while doing retrieveItem(): %s ", d->m_thread->lastErrorString() ) );
   }
 }
 
 void GitResource::handleGetDiffFinished()
 {
-  d->_diffThread->deleteLater();
-  d->_thread->deleteLater();
+  d->m_diffThread->deleteLater();
+  d->m_thread->deleteLater();
 
-  const QVector<GitThread::Commit> commits = d->_thread->commits();
+  const QVector<GitThread::Commit> commits = d->m_thread->commits();
   Q_ASSERT( commits.count() == 1 );
   const GitThread::Commit commit = commits.first();
 
-  if ( d->_diffThread->lastErrorCode() == GitThread::ResultSuccess ) {
-    Akonadi::Item item( d->_thread->property( "item" ).value<Akonadi::Item>() );
-    const QByteArray diff = d->_diffThread->diff();
+  if ( d->m_diffThread->lastErrorCode() == GitThread::ResultSuccess ) {
+    Akonadi::Item item( d->m_thread->property( "item" ).value<Akonadi::Item>() );
+    const QByteArray diff = d->m_diffThread->diff();
     Q_ASSERT( !diff.isEmpty() );
     item.setPayload<KMime::Message::Ptr>( d->commitToItem( commit,
                                                            diff ).payload<KMime::Message::Ptr>() );
     itemRetrieved( item );
   } else {
-    kError() << "DEBUG " << d->_diffThread->lastErrorString();
-    cancelTask( d->_diffThread->lastErrorString() );
+    kError() << "DEBUG " << d->m_diffThread->lastErrorString();
+    cancelTask( d->m_diffThread->lastErrorString() );
   }
 
-  d->_thread = 0;
-  d->_diffThread = 0;
+  d->m_thread = 0;
+  d->m_diffThread = 0;
 }
 
 void GitResource::itemChanged( const Akonadi::Item &item, const QSet<QByteArray> &parts )
