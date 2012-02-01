@@ -191,33 +191,44 @@ void GitResource::configure( WId windowId )
 
 void GitResource::retrieveCollections()
 {
-  Collection collection;
-  collection.setRemoteId( QLatin1String( "master" ) ); // TODO: support more branches
-  collection.setName( d->repositoryName() );
-  collection.setParentCollection( Akonadi::Collection::root() );
-  collection.setContentMimeTypes( QStringList() << KMime::Message::mimeType()
-                                                << Akonadi::Collection::mimeType() );
-  collection.setRights( Collection::ReadOnly );
+  Collection rootCollection;
+  rootCollection.setName( d->repositoryName() );
+  rootCollection.setContentMimeTypes( QStringList() << Akonadi::Collection::mimeType() );
+  rootCollection.setRights( Collection::ReadOnly );
+  rootCollection.setParentCollection( Akonadi::Collection::root() );
+  rootCollection.setRemoteId( QLatin1String( "git_resource_root" ) );
 
   EntityDisplayAttribute *const evendDisplayAttribute = new EntityDisplayAttribute();
   evendDisplayAttribute->setIconName( "git" );
-  collection.addAttribute( evendDisplayAttribute );
+  rootCollection.addAttribute( evendDisplayAttribute );
 
-  collectionsRetrieved( Collection::List() << collection );
+  Collection master;
+  master.setName( QLatin1String( "master" ) );
+  master.setParentCollection( rootCollection );
+  master.setRemoteId( QLatin1String( "master" ) ); // TODO: support more branches
+  master.setContentMimeTypes( QStringList() << KMime::Message::mimeType()
+                                            << Akonadi::Collection::mimeType() );
+  master.setRights( Collection::ReadOnly );
+
+  collectionsRetrieved( Collection::List() << rootCollection << master );
 }
 
 void GitResource::retrieveItems( const Akonadi::Collection &collection )
 {
   Q_UNUSED( collection );
-  if ( !d->m_thread ) {
-    d->m_thread = new GitThread( d->mSettings->repository(), GitThread::GetAllCommits );
-    connect( d->m_thread, SIGNAL(finished()), SLOT(handleGetAllFinished()) );
-    connect( d->m_thread, SIGNAL(gitFetchDone()), SLOT(handleGitFetch()) );
-    emit status( Running, i18n( "Retrieving items..." ) );
-    d->m_watcher->blockSignals( true ); // We don't want signals during the git fetch
-    d->m_thread->start();
+  if ( collection.remoteId() == QLatin1String( "master" ) ) {
+    if ( !d->m_thread ) {
+      d->m_thread = new GitThread( d->mSettings->repository(), GitThread::GetAllCommits );
+      connect( d->m_thread, SIGNAL(finished()), SLOT(handleGetAllFinished()) );
+      connect( d->m_thread, SIGNAL(gitFetchDone()), SLOT(handleGitFetch()) );
+      emit status( Running, i18n( "Retrieving items..." ) );
+      d->m_watcher->blockSignals( true ); // We don't want signals during the git fetch
+      d->m_thread->start();
+    } else {
+      cancelTask( i18n( "A retrieveItems() task is already running." ) );
+    }
   } else {
-    cancelTask( i18n( "A retrieveItems() task is already running." ) );
+    itemsRetrieved( Akonadi::Item::List() );
   }
 }
 
