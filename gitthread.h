@@ -50,6 +50,8 @@ public:
   ResultCode lastErrorCode() const;
   QVector<Commit> commits() const;
   QByteArray diff() const;
+Q_SIGNALS:
+  void gitFetchDone();
 
 private:
   bool openRepository( git_repository ** );

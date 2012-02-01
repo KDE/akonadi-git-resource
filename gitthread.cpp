@@ -70,6 +70,17 @@ void GitThread::run()
 
 void GitThread::getAllCommits()
 {
+  // First, do a git fetch
+  gitFetch();
+  emit gitFetchDone();
+
+  if ( m_resultCode != ResultSuccess ) {
+    m_resultCode = ResultSuccess;
+    // Lets still do a normal sync, without the fetching...
+    m_errorString.clear();
+    // Not sure this ever happens though, git fetch should be successfull
+  }
+
   git_repository *repository = 0;
   if ( !openRepository( &repository ) )
     return;
@@ -209,9 +220,8 @@ QByteArray GitThread::diff() const
 void GitThread::gitFetch()
 {
   QProcess *process = new QProcess();
-  QStringList args;
   process->setWorkingDirectory( m_path );
-  process->start( QLatin1String( "git fetch origin " ) );
+  process->start( QLatin1String( "git fetch origin" ) );
   process->waitForFinished();
   if ( process->exitCode() != 0 ) {
     m_resultCode = ResultErrorPulling;

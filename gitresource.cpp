@@ -187,7 +187,9 @@ void GitResource::retrieveItems( const Akonadi::Collection &collection )
   if ( !d->m_thread ) {
     d->m_thread = new GitThread( d->mSettings->repository(), GitThread::GetAllCommits );
     connect( d->m_thread, SIGNAL(finished()), SLOT(handleGetAllFinished()) );
+    connect( d->m_thread, SIGNAL(gitFetchDone()), SLOT(handleGitFetch()) );
     emit status( Running, i18n( "Retrieving items..." ) );
+    d->m_watcher->blockSignals( true ); // We don't want signals during the git fetch
     d->m_thread->start();
   } else {
     cancelTask( i18n( "A retrieveItems() task is already running." ) );
@@ -294,6 +296,13 @@ void GitResource::handleRepositoryChanged()
     synchronize();
   }
 }
+
+void GitResource::handleGitFetch()
+{
+  // Our own git fetch is done, re-enable so we listen to external changes
+  d->m_watcher->blockSignals( false );
+}
+
 
 
 AKONADI_AGENT_FACTORY( GitResource, akonadi_git_resource )
