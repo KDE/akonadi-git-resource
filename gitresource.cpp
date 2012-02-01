@@ -68,6 +68,8 @@ public:
   Akonadi::Item commitToItem( const GitThread::Commit &commit,
                               const QByteArray &diff = QByteArray() ) const;
 
+  void updateResourceName();
+
   GitSettings *mSettings;
   GitThread   *m_thread;
   GitThread   *m_diffThread;
@@ -77,6 +79,12 @@ public:
 private:
   GitResource *q;
 };
+
+void GitResource::Private::updateResourceName()
+{
+  const QString repName = repositoryName();
+  q->setName( repositoryName().isEmpty() ? QLatin1String( "GitResource" ) : repName );
+}
 
 void GitResource::Private::setupWatcher()
 {
@@ -156,6 +164,7 @@ GitResource::GitResource( const QString &id )
     d->mSettings->writeConfig();
   }
 
+  d->updateResourceName();
   d->m_currentHead = getRemoteHead( d->mSettings->repository() + QLatin1String( "/.git/" ) );
 }
 
@@ -178,7 +187,7 @@ void GitResource::configure( WId windowId )
     if ( d->mSettings->repository() != oldRepo ) {
       d->m_flagsDatabase->clear();
     }
-
+    d->updateResourceName();
     d->setupWatcher();
     Collection collection;
     collection.setRemoteId( QLatin1String( "master" ) );
