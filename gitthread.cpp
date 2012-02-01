@@ -63,7 +63,7 @@ void GitThread::run()
   else if ( m_type == GitThread::GetOneCommit )
     getOneCommit();
   else if ( m_type == GitThread::GetDiff )
-    getDiff();
+    gitDiff();
   else
     Q_ASSERT( false );
 }
@@ -184,7 +184,7 @@ QVector<GitThread::Commit> GitThread::commits() const
   return m_commits;
 }
 
-void GitThread::getDiff()
+void GitThread::gitDiff()
 {
   QProcess *process = new QProcess();
   QStringList args;

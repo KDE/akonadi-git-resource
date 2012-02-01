@@ -55,7 +55,7 @@ private:
   bool openRepository( git_repository ** );
   void getAllCommits();
   void getOneCommit();
-  void getDiff();
+  void gitDiff();
   void gitFetch();
 
 private:
