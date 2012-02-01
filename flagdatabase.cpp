@@ -35,10 +35,11 @@ enum {
 class FlagDatabase::Private
 {
 public:
-  Private()
+  Private( const QString &identifier )
   {
     m_database = QSqlDatabase::addDatabase( "QSQLITE" );
-    const QString filename = KStandardDirs::locateLocal( "data", "akonadi_git_resource/flags.db" );
+    const QString filename = KStandardDirs::locateLocal( "data",
+                                                         identifier + QLatin1String( "/flags.db" ) );
     m_database.setDatabaseName( filename );
     if ( !QFile::exists( filename ) ) {
       createDB();
@@ -111,7 +112,7 @@ Akonadi::Item::Flags FlagDatabase::flags( const QString &sha1 ) const
   return flags;
 }
 
-FlagDatabase::FlagDatabase() : d( new Private() )
+FlagDatabase::FlagDatabase( const QString &identifier ) : d( new Private( identifier ) )
 {
 }
 

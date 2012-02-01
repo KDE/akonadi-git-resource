@@ -25,7 +25,7 @@
 
 class FlagDatabase {
 public:
-  FlagDatabase();
+  FlagDatabase( const QString &identifier );
   ~FlagDatabase();
 
   bool insertFlag( const QString &sha1, const QString &flag );
