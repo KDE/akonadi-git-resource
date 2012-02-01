@@ -39,6 +39,7 @@
 #include <KLocale>
 #include <KWindowSystem>
 
+#include <QFileInfo>
 #include <QFileSystemWatcher>
 
 using namespace Akonadi;
@@ -60,6 +61,8 @@ public:
   {
     delete m_flagsDatabase;
   }
+
+  QString repositoryName() const;
 
   void setupWatcher();
   Akonadi::Item commitToItem( const GitThread::Commit &commit,
@@ -115,6 +118,16 @@ Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commi
 
   item.setFlags( m_flagsDatabase->flags( commit.sha1 ) );
   return item;
+}
+
+QString GitResource::Private::repositoryName() const
+{
+  QString repoPath = mSettings->repository();
+  if ( repoPath.endsWith( '/') || repoPath.endsWith( '\\') )
+    repoPath.chop( 1 );
+
+  QFileInfo info( repoPath );
+  return info.baseName();
 }
 
 GitResource::GitResource( const QString &id )
@@ -180,11 +193,16 @@ void GitResource::retrieveCollections()
 {
   Collection collection;
   collection.setRemoteId( QLatin1String( "master" ) ); // TODO: support more branches
-  collection.setName( QLatin1String( "master" ) );
+  collection.setName( d->repositoryName() );
   collection.setParentCollection( Akonadi::Collection::root() );
   collection.setContentMimeTypes( QStringList() << KMime::Message::mimeType()
                                                 << Akonadi::Collection::mimeType() );
   collection.setRights( Collection::ReadOnly );
+
+  EntityDisplayAttribute *const evendDisplayAttribute = new EntityDisplayAttribute();
+  evendDisplayAttribute->setIconName( "git" );
+  collection.addAttribute( evendDisplayAttribute );
+
   collectionsRetrieved( Collection::List() << collection );
 }
 
