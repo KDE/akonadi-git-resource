@@ -115,7 +115,7 @@ FlagDatabase::FlagDatabase() : d( new Private() )
 {
 }
 
-
 FlagDatabase::~FlagDatabase()
 {
+  delete d;
 }
