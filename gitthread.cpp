@@ -198,9 +198,26 @@ void GitThread::getDiff()
   } else {
     m_resultCode = ResultSuccess;
   }
+  process->deleteLater();
 }
 
 QByteArray GitThread::diff() const
 {
   return m_diff;
+}
+
+void GitThread::gitFetch()
+{
+  QProcess *process = new QProcess();
+  QStringList args;
+  process->setWorkingDirectory( m_path );
+  process->start( QLatin1String( "git fetch origin " ) );
+  process->waitForFinished();
+  if ( process->exitCode() != 0 ) {
+    m_resultCode = ResultErrorPulling;
+    m_errorString = i18n( "Error doing git pull: %1", QString::number( process->exitCode() ) );
+  } else {
+    m_resultCode = ResultSuccess;
+  }
+  process->deleteLater();
 }

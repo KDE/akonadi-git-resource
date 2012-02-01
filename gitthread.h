@@ -30,6 +30,7 @@ public:
     ResultNothingToFetch,
     ResultErrorDiffing,
     ResultErrorInvalidHead,
+    ResultErrorPulling,
   };
 
   struct Commit {
@@ -55,6 +56,7 @@ private:
   void getAllCommits();
   void getOneCommit();
   void getDiff();
+  void gitFetch();
 
 private:
   QVector<Commit> m_commits;
