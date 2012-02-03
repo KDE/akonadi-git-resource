@@ -140,6 +140,7 @@ void GitThread::getAllCommits()
     }
 
     m_commits << parseCommit( wcommit );
+    git_commit_close( wcommit );
   }
 
   git_revwalk_free( walk_this_way );
@@ -170,6 +171,7 @@ void GitThread::getOneCommit()
 
   m_commits << parseCommit( wcommit );
 
+  git_commit_close( wcommit );
   git_repository_free( repository );
 }
 
