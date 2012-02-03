@@ -29,9 +29,6 @@ static GitThread::Commit parseCommit( git_commit *wcommit )
   git_oid_fmt( sha1, oid );
   sha1[40] = '\0';
   commit.sha1 = QByteArray( sha1 );
-  delete cmsg;
-  delete cauth;
-
   return commit;
 }
 
