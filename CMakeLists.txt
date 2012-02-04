@@ -66,9 +66,9 @@ target_link_libraries(akonadi_git_resource
   ${KDEPIMLIBS_KCALCORE_LIBS}
   ${KDEPIMLIBS_KMIME_LIBS}
   ${KDE4_KIO_LIBS}
+  ${KDEPIMLIBS_KPIMIDENTITIES_LIBS}
+  ${QT_QTSQL_LIBRARY}
   git2
-  QtSql
-  kpimidentities
 )
 
 install( TARGETS akonadi_git_resource DESTINATION ${PLUGIN_INSTALL_DIR}/ )
