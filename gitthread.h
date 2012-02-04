@@ -76,8 +76,6 @@ private:
   bool openRepository( git_repository ** );
   void getAllCommits();
   void getOneCommit();
-  void gitDiff();
-  void gitFetch();
 
 private:
   QVector<Commit> m_commits;

@@ -165,7 +165,8 @@ GitResource::GitResource( const QString &id )
   }
 
   d->updateResourceName();
-  d->m_currentHead = getRemoteHead( d->mSettings->repository() + QLatin1String( "/.git/" ) );
+  d->m_currentHead = CheatingUtils::getRemoteHead( d->mSettings->repository() +
+                                                   QLatin1String( "/.git/" ) );
 }
 
 GitResource::~GitResource()
@@ -332,7 +333,8 @@ void GitResource::itemChanged( const Akonadi::Item &item, const QSet<QByteArray>
 
 void GitResource::handleRepositoryChanged()
 {
-  const QByteArray newHead = getRemoteHead( d->mSettings->repository() + QLatin1String( "/.git/" ) );
+  const QByteArray newHead = CheatingUtils::getRemoteHead( d->mSettings->repository() +
+                                                           QLatin1String( "/.git/" ) );
   if ( newHead != d->m_currentHead && !newHead.isEmpty() ) {
     d->m_currentHead = newHead;
     Collection collection;

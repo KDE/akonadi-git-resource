@@ -74,28 +74,26 @@ bool GitThread::openRepository( git_repository **repository )
 
 void GitThread::run()
 {
-  if ( m_type == GitThread::GetAllCommits )
+  if ( m_type == GitThread::GetAllCommits ) {
     getAllCommits();
-  else if ( m_type == GitThread::GetOneCommit )
+  } else if ( m_type == GitThread::GetOneCommit ) {
     getOneCommit();
-  else if ( m_type == GitThread::GetDiff )
-    gitDiff();
-  else
+  } else if ( m_type == GitThread::GetDiff ) {
+    if ( !CheatingUtils::gitDiff( m_path, m_sha1, &m_diff, &m_errorString ) ) {
+      m_resultCode = ResultErrorDiffing;
+    }
+  }
+  else {
     Q_ASSERT( false );
+  }
 }
 
 void GitThread::getAllCommits()
 {
   // First, do a git fetch
-  gitFetch();
+  CheatingUtils::gitFetch( m_path, &m_errorString );
   emit gitFetchDone();
-
-  if ( m_resultCode != ResultSuccess ) {
-    m_resultCode = ResultSuccess;
-    // Lets still do a normal sync, without the fetching...
-    m_errorString.clear();
-    // Not sure this ever happens though, git fetch should be successfull
-  }
+  m_errorString.clear(); // if there's an error, lets continue, and do a normal sync without the fetch
 
   git_repository *repository = 0;
   if ( !openRepository( &repository ) )
@@ -112,7 +110,7 @@ void GitThread::getAllCommits()
   git_revwalk_sorting( walk_this_way, GIT_SORT_TOPOLOGICAL | GIT_SORT_REVERSE );
 
   //git_reference *head;
-  const QByteArray remoteHeadSha1 = getRemoteHead( m_path );
+  const QByteArray remoteHeadSha1 = CheatingUtils::getRemoteHead( m_path );
 
   if ( remoteHeadSha1.isEmpty() ) {
     m_resultCode = ResultErrorInvalidHead;
@@ -213,39 +211,8 @@ QVector<GitThread::Commit> GitThread::commits() const
   return m_commits;
 }
 
-void GitThread::gitDiff()
-{
-  QProcess *process = new QProcess();
-  QStringList args;
-  process->setWorkingDirectory( m_path );
-  process->start( QLatin1String( "git show " ) + m_sha1 );
-  process->waitForFinished();
-  m_diff = process->readAllStandardOutput();
-  if ( process->exitCode() != 0 ) {
-    m_resultCode = ResultErrorDiffing;
-    m_errorString = i18n( "Error obtaining diff: %1", QString::number( process->exitCode() ) );
-  } else {
-    m_resultCode = ResultSuccess;
-  }
-  process->deleteLater();
-}
-
 QByteArray GitThread::diff() const
 {
   return m_diff;
 }
 
-void GitThread::gitFetch()
-{
-  QProcess *process = new QProcess();
-  process->setWorkingDirectory( m_path );
-  process->start( QLatin1String( "git fetch origin" ) );
-  process->waitForFinished();
-  if ( process->exitCode() != 0 ) {
-    m_resultCode = ResultErrorPulling;
-    m_errorString = i18n( "Error doing git pull: %1", QString::number( process->exitCode() ) );
-  } else {
-    m_resultCode = ResultSuccess;
-  }
-  process->deleteLater();
-}

@@ -22,20 +22,20 @@
 
 // Not using libgit is cheating
 
-#include <QFile>
+#include <KLocale>
+
 #include <QString>
 #include <QByteArray>
 
-// returns the SHA1 for origin/master
-static QByteArray getRemoteHead( const QString repoPath )
-{
-  QByteArray sha1;
-  QFile file( repoPath + QLatin1String( "/refs/remotes/origin/master" ) );
-  if ( file.open( QIODevice::ReadOnly | QIODevice::Text ) ) {
-    sha1 = file.readLine().trimmed();
-  }
+namespace CheatingUtils {
 
-  return sha1;
+  // returns the SHA1 for origin/master
+  QByteArray getRemoteHead( const QString repoPath );
+
+  bool gitFetch( const QString &path, QString *out_errorMessage );
+
+  bool gitDiff( const QString &path, const QString &sha1,
+                QByteArray *out_diff, QString *out_errorMessage );
 }
 
 #endif

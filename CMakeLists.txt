@@ -17,7 +17,7 @@ add_definitions (-DQT_USE_FAST_CONCATENATION -DQT_USE_FAST_OPERATOR_PLUS)
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KDE4_ENABLE_EXCEPTIONS}" )
 
-set( gitresource_SRCS gitresource.cpp configdialog.cpp gitthread.cpp flagdatabase.cpp )
+set( gitresource_SRCS cheatingutils.cpp gitresource.cpp configdialog.cpp gitthread.cpp flagdatabase.cpp )
 
 include_directories(
   ${CMAKE_SOURCE_DIR}
