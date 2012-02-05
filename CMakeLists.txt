@@ -1,5 +1,7 @@
 project(akonadi_git_resource)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
+find_package(Libgit2)
 find_package(Akonadi)
 find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
