@@ -198,6 +198,7 @@ void GitResource::configure( WId windowId )
     Collection collection;
     collection.setRemoteId( QLatin1String( "master" ) );
     invalidateCache( collection );
+    synchronizeCollectionTree();
     synchronize();
   } else {
     emit configurationDialogRejected();
