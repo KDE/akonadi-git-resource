@@ -28,6 +28,7 @@
 
 #include <akonadi/agentfactory.h>
 #include <Akonadi/ItemFetchScope>
+#include <Akonadi/CachePolicy>
 #include <Akonadi/ChangeRecorder>
 #include <akonadi/dbusconnectionpool.h>
 #include <Akonadi/EntityDisplayAttribute>
@@ -43,6 +44,10 @@
 #include <QFileSystemWatcher>
 
 using namespace Akonadi;
+
+enum {
+  IntervalCheckTime = 5 // minutes
+};
 
 class GitResource::Private {
 public:
@@ -219,6 +224,12 @@ void GitResource::retrieveCollections()
   master.setContentMimeTypes( QStringList() << KMime::Message::mimeType()
                                             << Akonadi::Collection::mimeType() );
   master.setRights( Collection::ReadOnly );
+
+  Akonadi::CachePolicy policy;
+  policy.setIntervalCheckTime( IntervalCheckTime );
+  policy.setInheritFromParent( false );
+  policy.setSyncOnDemand( true );
+  master.setCachePolicy( policy );
 
   collectionsRetrieved( Collection::List() << rootCollection << master );
 }
