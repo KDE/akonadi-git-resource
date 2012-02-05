@@ -17,6 +17,7 @@
     02110-1301, USA.
 */
 
+#include "settings.h"
 #include "gitthread.h"
 #include "cheatingutils.h"
 
@@ -51,14 +52,15 @@ static GitThread::Commit parseCommit( git_commit *wcommit )
   return commit;
 }
 
-GitThread::GitThread( const QString &path, TaskType type, const QString &sha1,
+GitThread::GitThread( GitSettings *settings, TaskType type, const QString &sha1,
                       QObject *parent ) : QThread( parent )
-                                        , m_path( path )
+                                        , m_path( settings->repository() )
                                         , m_resultCode( ResultSuccess )
                                         , m_type( type )
                                         , m_sha1( sha1 )
+                                        , m_settings( settings )
 {
-  m_path = path + QLatin1String( "/.git/" );
+  m_path += QLatin1String( "/.git/" );
   Q_ASSERT( !( type == GitThread::GetAllCommits && !sha1.isEmpty() ) );
 }
 
@@ -90,10 +92,12 @@ void GitThread::run()
 
 void GitThread::getAllCommits()
 {
-  // First, do a git fetch
-  CheatingUtils::gitFetch( m_path, &m_errorString );
+  if ( m_settings->doGitFetch() ) {
+    // First, do a git fetch
+    CheatingUtils::gitFetch( m_path, &m_errorString );
+    m_errorString.clear(); // if there's an error, lets continue, and do a normal sync without the fetch
+  }
   emit gitFetchDone();
-  m_errorString.clear(); // if there's an error, lets continue, and do a normal sync without the fetch
 
   git_repository *repository = 0;
   if ( !openRepository( &repository ) )

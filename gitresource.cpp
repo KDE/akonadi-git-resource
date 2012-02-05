@@ -240,7 +240,7 @@ void GitResource::retrieveItems( const Akonadi::Collection &collection )
   Q_UNUSED( collection );
   if ( collection.remoteId() == QLatin1String( "master" ) ) {
     if ( !d->m_thread ) {
-      d->m_thread = new GitThread( d->mSettings->repository(), GitThread::GetAllCommits );
+      d->m_thread = new GitThread( d->mSettings, GitThread::GetAllCommits );
       connect( d->m_thread, SIGNAL(finished()), SLOT(handleGetAllFinished()) );
       connect( d->m_thread, SIGNAL(gitFetchDone()), SLOT(handleGitFetch()) );
       emit status( Running, i18n( "Retrieving items..." ) );
@@ -258,8 +258,7 @@ bool GitResource::retrieveItem( const Item &item, const QSet<QByteArray> &parts 
 {
   Q_UNUSED( parts );
   if ( !d->m_thread ) {
-    d->m_thread = new GitThread( d->mSettings->repository(), GitThread::GetOneCommit,
-                                item.remoteId() );
+    d->m_thread = new GitThread( d->mSettings, GitThread::GetOneCommit, item.remoteId() );
     connect( d->m_thread, SIGNAL(finished()), SLOT(handleGetOneFinished()) );
     emit status( Running, i18n( "Retrieving item..." ) );
     d->m_thread->setProperty( "item", QVariant::fromValue<Akonadi::Item>( item ) );
@@ -298,7 +297,7 @@ void GitResource::handleGetOneFinished()
   emit status( Idle, i18n( "Ready" ) );
   if ( d->m_thread->lastErrorCode() == GitThread::ResultSuccess ) {
     Akonadi::Item item( d->m_thread->property( "item" ).value<Akonadi::Item>() );
-    d->m_diffThread = new GitThread( d->mSettings->repository(), GitThread::GetDiff, item.remoteId() );
+    d->m_diffThread = new GitThread( d->mSettings, GitThread::GetDiff, item.remoteId() );
     connect( d->m_diffThread, SIGNAL(finished()), SLOT(handleGetDiffFinished()) );
     d->m_diffThread->start();
   } else {

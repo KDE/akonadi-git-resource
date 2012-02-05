@@ -27,7 +27,7 @@
 
 #include <git2/repository.h>
 
-
+class GitSettings;
 class GitThread : public QThread {
   Q_OBJECT
 public:
@@ -59,7 +59,7 @@ public:
     QString sha1;
   };
 
-  GitThread( const QString &path,
+  GitThread( GitSettings *settings,
              TaskType type,
              const QString &sha1 = QString(),
              QObject *parent = 0 );
@@ -85,6 +85,7 @@ private:
   ResultCode m_resultCode;
   TaskType m_type;
   QString m_sha1;
+  GitSettings *m_settings;
 };
 
 #endif

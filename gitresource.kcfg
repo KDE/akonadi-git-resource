@@ -10,6 +10,10 @@
       <label>Include scripty commits</label>
       <default>false</default>
     </entry>
+    <entry name="DoGitFetch" type="Bool">
+      <label>Do a git fetch when synchronizing</label>
+      <default>true</default>
+    </entry>
     <entry name="From" type="DateTime">
       <label>Only commits older than this date</label>
       <default></default>
