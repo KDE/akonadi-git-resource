@@ -85,8 +85,7 @@ void GitThread::run()
     if ( !CheatingUtils::gitDiff( m_path, m_sha1, &m_diff, &m_errorString ) ) {
       m_resultCode = ResultErrorDiffing;
     }
-  }
-  else {
+  } else {
     Q_ASSERT( false );
   }
 }
