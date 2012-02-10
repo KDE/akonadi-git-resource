@@ -285,11 +285,12 @@ void GitResource::handleGetAllFinished()
         items << d->commitToItem( commit );
       }
     }
+    d->m_thread = 0;
     itemsRetrieved( items ); // TODO: make it incremental?
   } else {
+    d->m_thread = 0;
     cancelTask( i18n( "Error while doing retrieveItems(): %s ", d->m_thread->lastErrorString() ) );
   }
-  d->m_thread = 0;
 }
 
 void GitResource::handleGetOneFinished()
@@ -313,21 +314,23 @@ void GitResource::handleGetDiffFinished()
   const QVector<GitThread::Commit> commits = d->m_thread->commits();
   Q_ASSERT( commits.count() == 1 );
   const GitThread::Commit commit = commits.first();
+  const QString lastErrorString = d->m_diffThread->lastErrorString();
+  const GitThread::ResultCode lastErrorCode = d->m_diffThread->lastErrorCode();
+  Akonadi::Item item( d->m_thread->property( "item" ).value<Akonadi::Item>() );
+  const QByteArray diff = d->m_diffThread->diff();
 
-  if ( d->m_diffThread->lastErrorCode() == GitThread::ResultSuccess ) {
-    Akonadi::Item item( d->m_thread->property( "item" ).value<Akonadi::Item>() );
-    const QByteArray diff = d->m_diffThread->diff();
+  d->m_thread = 0;
+  d->m_diffThread = 0;
+
+  if ( lastErrorCode == GitThread::ResultSuccess ) {
     Q_ASSERT( !diff.isEmpty() );
     item.setPayload<KMime::Message::Ptr>( d->commitToItem( commit,
                                                            diff ).payload<KMime::Message::Ptr>() );
     itemRetrieved( item );
   } else {
-    kError() << "DEBUG " << d->m_diffThread->lastErrorString();
-    cancelTask( d->m_diffThread->lastErrorString() );
+    kError() << "DEBUG " << lastErrorString;
+    cancelTask( lastErrorString );
   }
-
-  d->m_thread = 0;
-  d->m_diffThread = 0;
 }
 
 void GitResource::itemChanged( const Akonadi::Item &item, const QSet<QByteArray> &parts )
