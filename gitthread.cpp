@@ -77,6 +77,7 @@ bool GitThread::openRepository( git_repository **repository )
 
 void GitThread::run()
 {
+  kDebug() << "GitThread::run() " << m_type;
   if ( m_type == GitThread::GetAllCommits ) {
     getAllCommits();
   } else if ( m_type == GitThread::GetOneCommit ) {

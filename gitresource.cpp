@@ -272,6 +272,7 @@ bool GitResource::retrieveItem( const Item &item, const QSet<QByteArray> &parts 
 
 void GitResource::handleGetAllFinished()
 {
+  kDebug() << "GitResource::handleGetAllFinished()";
   d->m_thread->deleteLater();
   emit status( Idle, i18n( "Ready" ) );
   if ( d->m_thread->lastErrorCode() == GitThread::ResultSuccess ) {
@@ -295,6 +296,7 @@ void GitResource::handleGetAllFinished()
 
 void GitResource::handleGetOneFinished()
 {
+  kDebug() << "GitResource::handleGetOneFinished()";
   emit status( Idle, i18n( "Ready" ) );
   if ( d->m_thread->lastErrorCode() == GitThread::ResultSuccess ) {
     Akonadi::Item item( d->m_thread->property( "item" ).value<Akonadi::Item>() );
@@ -302,12 +304,15 @@ void GitResource::handleGetOneFinished()
     connect( d->m_diffThread, SIGNAL(finished()), SLOT(handleGetDiffFinished()) );
     d->m_diffThread->start();
   } else {
+    kError() << "GitResource::handleGetOneFinished() error: " << d->m_thread->lastErrorString()
+             << d->m_thread->lastErrorCode();
     cancelTask( i18n( "Error while doing retrieveItem(): %s ", d->m_thread->lastErrorString() ) );
   }
 }
 
 void GitResource::handleGetDiffFinished()
 {
+  kDebug() << "GitResource::handleGetDiffFinished()";
   d->m_diffThread->deleteLater();
   d->m_thread->deleteLater();
 
@@ -328,7 +333,7 @@ void GitResource::handleGetDiffFinished()
                                                            diff ).payload<KMime::Message::Ptr>() );
     itemRetrieved( item );
   } else {
-    kError() << "DEBUG " << lastErrorString;
+    kError() << "GitResource::handleGetDiffFinished()" << lastErrorString;
     cancelTask( lastErrorString );
   }
 }
