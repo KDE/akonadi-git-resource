@@ -26,6 +26,7 @@
 
 #include <QDir>
 #include <QDebug>
+#include <QMutexLocker>
 
 #include <git2/oid.h>
 #include <git2/errors.h>
@@ -196,27 +197,24 @@ void GitThread::getOneCommit()
 
 QString GitThread::lastErrorString() const
 {
-  if ( isFinished() ) // to avoid concurrency
-    return m_errorString;
-
-  return QString();
+  QMutexLocker locker( &m_mutex );
+  return m_errorString;
 }
 
 GitThread::ResultCode GitThread::lastErrorCode() const
 {
-  if ( isFinished() ) // to avoid concurrency
-    return m_resultCode;
-
-  return ResultThreadStillRunning;
+  QMutexLocker locker( &m_mutex );
+  return m_resultCode;
 }
 
 QVector<GitThread::Commit> GitThread::commits() const
 {
+  QMutexLocker locker( &m_mutex );
   return m_commits;
 }
 
 QByteArray GitThread::diff() const
 {
+  QMutexLocker locker( &m_mutex );
   return m_diff;
 }
-

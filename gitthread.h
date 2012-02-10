@@ -20,6 +20,7 @@
 #ifndef AKONADI_GIT_THREAD_H_
 #define AKONADI_GIT_THREAD_H_
 
+#include <QMutex>
 #include <QThread>
 #include <QString>
 #include <QVector>
@@ -45,7 +46,6 @@ public:
     ResultErrorRevwalkPush,
     ResultErrorRevwalkNew,
     ResultErrorRepositoryHead,
-    ResultThreadStillRunning,
     ResultNothingToFetch,
     ResultErrorDiffing,
     ResultErrorInvalidHead,
@@ -86,6 +86,7 @@ private:
   TaskType m_type;
   QString m_sha1;
   GitSettings *m_settings;
+  mutable QMutex m_mutex;
 };
 
 #endif
