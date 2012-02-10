@@ -55,7 +55,6 @@ bool CheatingUtils::gitDiff( const QString &path, const QString &sha1,
                              QByteArray *out_diff, QString *out_errorMessage )
 {
   QProcess *process = new QProcess();
-  QStringList args;
   process->setWorkingDirectory( path );
   process->start( QLatin1String( "git show " ) + sha1 );
   process->waitForFinished();
