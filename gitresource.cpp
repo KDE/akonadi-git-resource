@@ -306,6 +306,7 @@ void GitResource::handleGetOneFinished()
   } else {
     kError() << "GitResource::handleGetOneFinished() error: " << d->m_thread->lastErrorString()
              << d->m_thread->lastErrorCode();
+    d->m_thread = 0;
     cancelTask( i18n( "Error while doing retrieveItem(): %s ", d->m_thread->lastErrorString() ) );
   }
 }
