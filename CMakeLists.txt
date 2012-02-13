@@ -70,7 +70,7 @@ target_link_libraries(akonadi_git_resource
   ${KDE4_KIO_LIBS}
   ${KDEPIMLIBS_KPIMIDENTITIES_LIBS}
   ${QT_QTSQL_LIBRARY}
-  git2
+  ${Libgit2_LIBRARY}
 )
 
 install( TARGETS akonadi_git_resource DESTINATION ${PLUGIN_INSTALL_DIR}/ )
