@@ -1,5 +1,9 @@
 [Desktop Entry]
 Name=Git Resource
+Name[pt]=Recurso do Git
+Name[pt_BR]=Recurso do Git
+Name[uk]=Ресурс git
+Name[x-test]=xxGit Resourcexx
 Type=AkonadiResource
 Exec=akonadi_git_resource
 Icon=git
