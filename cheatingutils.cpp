@@ -20,6 +20,7 @@
 #include "cheatingutils.h"
 
 #include <KLocale>
+#include <KDebug>
 
 #include <QFile>
 #include <QProcess>
@@ -29,10 +30,26 @@ QByteArray CheatingUtils::getRemoteHead( const QString repoPath )
 {
   QByteArray sha1;
   QFile file( repoPath + QLatin1String( "/refs/remotes/origin/master" ) );
+
+  // TODO: remove all this logic when we have branch support.
+  if ( !file.exists() ) {
+    kDebug() << "Master doesn't exist, falling back to HEAD";
+    QFile headFile( repoPath + QLatin1String( "/refs/remotes/origin/HEAD" ) );
+    if ( headFile.open( QIODevice::ReadOnly | QIODevice::Text ) ) {
+      const QList<QByteArray> tokens = headFile.readLine().trimmed().split( ' ' );
+      if ( tokens.count() == 2 ) {
+        const QString head = tokens.at( 1 );
+        file.setFileName( repoPath + QLatin1Char('/') + head );
+      }
+    }
+  }
+
   if ( file.open( QIODevice::ReadOnly | QIODevice::Text ) ) {
     sha1 = file.readLine().trimmed();
   }
 
+  if ( sha1.isEmpty() )
+    kError() << "CheatingUtils::getRemoteHead(): empty sha1";
   return sha1;
 }
 
