@@ -286,12 +286,11 @@ void GitResource::handleGetAllFinished()
         items << d->commitToItem( commit );
       }
     }
-    d->m_thread = 0;
     itemsRetrieved( items ); // TODO: make it incremental?
   } else {
-    d->m_thread = 0;
     cancelTask( i18n( "Error while doing retrieveItems(): %s ", d->m_thread->lastErrorString() ) );
   }
+  d->m_thread = 0;
 }
 
 void GitResource::handleGetOneFinished()
