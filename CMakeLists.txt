@@ -6,7 +6,7 @@ find_package(Akonadi REQUIRED)
 find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
 include(MacroLibrary)
-find_package(KdepimLibs 4.5.63 REQUIRED)
+find_package(KdepimLibs 4.8.0 REQUIRED)
 find_program(XSLTPROC_EXECUTABLE xsltproc)
 
 set(RESOURCE_VERSION "0.1")
