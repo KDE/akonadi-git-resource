@@ -1,5 +1,7 @@
 project(akonadi_git_resource)
 
+cmake_minimum_required(VERSION 2.6)
+
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 find_package(Libgit2 REQUIRED)
 find_package(Akonadi REQUIRED)
