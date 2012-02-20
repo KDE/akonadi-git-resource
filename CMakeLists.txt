@@ -3,7 +3,7 @@ project(akonadi_git_resource)
 cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-find_package(Libgit2 0.15.0 EXACT REQUIRED)
+find_package(Libgit2 0.16.0 EXACT REQUIRED)
 find_package(Akonadi REQUIRED)
 find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
