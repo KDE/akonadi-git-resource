@@ -121,6 +121,7 @@ Akonadi::Item GitResource::Private::commitToItem( const GitThread::Commit &commi
   item.setPayload( KMime::Message::Ptr( message ) );
 
   message->contentType()->setMimeType( "text/plain" );
+  message->contentType()->setCharset( "UTF-8" );
 
   if ( !body.isEmpty() ) {
     message->setBody( body );
