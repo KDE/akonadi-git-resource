@@ -209,7 +209,10 @@ void GitResource::retrieveCollections()
 {
   Collection rootCollection;
   rootCollection.setName( d->repositoryName() );
-  rootCollection.setContentMimeTypes( QStringList() << Akonadi::Collection::mimeType() );
+  // We must add the KMime mime type here to to an etm bug, otherwise collections only appear
+  // after you restart kmail
+  rootCollection.setContentMimeTypes( QStringList() << KMime::Message::mimeType()
+                                                    << Akonadi::Collection::mimeType() );
   rootCollection.setRights( Collection::ReadOnly );
   rootCollection.setParentCollection( Akonadi::Collection::root() );
   rootCollection.setRemoteId( QLatin1String( "git_resource_root" ) );
