@@ -3,7 +3,7 @@ project(akonadi_git_resource)
 cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-find_package(Libgit2 REQUIRED)
+find_package(Libgit2 0.15.0 EXACT REQUIRED)
 find_package(Akonadi REQUIRED)
 find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
@@ -72,8 +72,8 @@ target_link_libraries(akonadi_git_resource
   ${KDE4_KIO_LIBS}
   ${KDEPIMLIBS_KPIMIDENTITIES_LIBS}
   ${QT_QTSQL_LIBRARY}
-  ${Libgit2_LIBRARY}
+  # ${Libgit2_LIBRARY}
+  git2
 )
-
 install( TARGETS akonadi_git_resource DESTINATION ${PLUGIN_INSTALL_DIR}/ )
 install( FILES gitresource.desktop DESTINATION "${CMAKE_INSTALL_PREFIX}/share/akonadi/agents" )
