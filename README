@@ -1,0 +1,5 @@
+----------------------------------------------------------------------------------
+Limitations:
+- Only master is supported.
+- If you need authentication for the git fetch, you'll have to run ssh-agent/ssh-add
+  on the terminal where you start akonadi.
