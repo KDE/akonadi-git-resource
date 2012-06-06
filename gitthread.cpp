@@ -67,7 +67,7 @@ GitThread::GitThread( GitSettings *settings, TaskType type, const QString &sha1,
 
 bool GitThread::openRepository( git_repository **repository )
 {
-  if ( git_repository_open( repository, m_path.toUtf8() ) != GIT_SUCCESS ) {
+  if ( git_repository_open( repository, m_path.toUtf8() ) != GIT_OK ) {
     m_resultCode = ResultErrorOpeningRepository;
     m_errorString = "git_repository_open error";
     return false;
@@ -105,7 +105,7 @@ void GitThread::getAllCommits()
     return;
 
   git_revwalk *walk_this_way;
-  if ( git_revwalk_new( &walk_this_way, repository ) != GIT_SUCCESS ) {
+  if ( git_revwalk_new( &walk_this_way, repository ) != GIT_OK ) {
     m_resultCode = ResultErrorRevwalkNew;
     m_errorString = "git_revwalk_new error";
     git_repository_free( repository );
@@ -124,7 +124,7 @@ void GitThread::getAllCommits()
     return;
   }
   /*
-  if ( git_repository_head( &head, repository ) != GIT_SUCCESS ) {
+  if ( git_repository_head( &head, repository ) != GIT_OK ) {
     m_resultCode = ResultErrorRepositoryHead;
     m_errorString = "git_repository_head error";
     git_repository_free( repository );
@@ -134,7 +134,7 @@ void GitThread::getAllCommits()
   */
 
   git_oid head_oid;
-  if ( git_oid_fromstr( &head_oid, remoteHeadSha1.data() ) != GIT_SUCCESS ) {
+  if ( git_oid_fromstr( &head_oid, remoteHeadSha1.data() ) != GIT_OK ) {
     m_resultCode = ResultErrorInvalidHead;
     m_errorString = "Can't find head for origin/master";
     git_repository_free( repository );
@@ -142,16 +142,16 @@ void GitThread::getAllCommits()
   }
 
   int error = 0;
-  if ( ( error = git_revwalk_push( walk_this_way, &head_oid ) ) != GIT_SUCCESS ) {
+  if ( ( error = git_revwalk_push( walk_this_way, &head_oid ) ) != GIT_OK ) {
     m_resultCode = ResultErrorRevwalkPush;
     m_errorString = "git_revwalk_push error: " + QString::number( error );
     git_repository_free( repository );
     return;
   }
 
-  while( ( git_revwalk_next( &head_oid, walk_this_way ) ) == GIT_SUCCESS ) {
+  while( ( git_revwalk_next( &head_oid, walk_this_way ) ) == GIT_OK ) {
     git_commit *wcommit = 0;
-    if ( git_commit_lookup( &wcommit, repository, &head_oid ) != GIT_SUCCESS ) {
+    if ( git_commit_lookup( &wcommit, repository, &head_oid ) != GIT_OK ) {
       m_resultCode = ResultErrorCommitLookup;
       m_errorString = "git_commit_lookup error";
       git_repository_free( repository );
@@ -181,7 +181,7 @@ void GitThread::getOneCommit()
   git_commit *wcommit = 0;
   git_oid oid;
   git_oid_fromstr( &oid, m_sha1.toUtf8().data() );
-  if ( git_commit_lookup( &wcommit, repository, &oid ) != GIT_SUCCESS ) {
+  if ( git_commit_lookup( &wcommit, repository, &oid ) != GIT_OK ) {
     m_resultCode = ResultErrorCommitLookup;
     m_errorString = "git_commit_lookup error";
     git_repository_free( repository );
