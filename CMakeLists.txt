@@ -34,6 +34,7 @@ include_directories(
   ${KDEPIMLIBS_INCLUDE_DIRS}
   ${KDE4_INCLUDES}
   ${Boost_INCLUDE_DIR}
+  ${Libgit2_INCLUDE_DIR}
 )
 
 kde4_add_ui_files(gitresource_SRCS configdialog.ui)
