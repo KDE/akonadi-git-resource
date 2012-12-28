@@ -1,15 +1,26 @@
 project(akonadi_git_resource)
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.8)
+include(FeatureSummary)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
-find_package(Libgit2 0.17.0 EXACT REQUIRED)
-find_package(Akonadi REQUIRED)
+
+find_package(Libgit2 0.17.0 EXACT)
+set_package_properties(Libgit2 PROPERTIES DESCRIPTION "LibGit library" URL "http://libgit2.github.com/" TYPE REQUIRED)
+
+find_package(Akonadi QUIET CONFIG)
+set_package_properties(Akonadi PROPERTIES DESCRIPTION "Akonadi server libraries" URL "http://pim.kde.org/akonadi" TYPE REQUIRED PURPOSE "Akonadi is required to build the GIT resource")
+
 find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
-include(MacroLibrary)
-find_package(KdepimLibs 4.8.0 REQUIRED)
-find_program(XSLTPROC_EXECUTABLE xsltproc)
+
+find_package(KdepimLibs 4.8.0)
+set_package_properties(KdepimLibs PROPERTIES DESCRIPTION "The KDEPIM libraries" URL "http://www.kde.org" TYPE REQUIRED)
+
+find_package(Xsltproc)
+set_package_properties(Xsltproc PROPERTIES DESCRIPTION "XSLT processor from libxslt" TYPE REQUIRED PURPOSE "Required to generate D-Bus interfaces.")
+
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
 set(RESOURCE_VERSION "0.1")
 set(LIB_VERSION "1.0")
@@ -39,18 +50,6 @@ include_directories(
 
 kde4_add_ui_files(gitresource_SRCS configdialog.ui)
 kde4_add_kcfg_files(gitresource_SRCS settings.kcfgc)
-
-macro(kcfg_generate_dbus_interface _kcfg _name)
-  add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${_name}.xml
-    COMMAND ${XSLTPROC_EXECUTABLE} --stringparam interfaceName ${_name}
-    ${KDEPIMLIBS_DATA_DIR}/akonadi-kde/kcfg2dbus.xsl
-    ${_kcfg}
-    > ${CMAKE_CURRENT_BINARY_DIR}/${_name}.xml
-    DEPENDS ${KDEPIMLIBS_DATA_DIR}/akonadi-kde/kcfg2dbus.xsl
-    ${_kcfg}
-    )
-endmacro(kcfg_generate_dbus_interface)
 
 kcfg_generate_dbus_interface(${CMAKE_CURRENT_SOURCE_DIR}/gitresource.kcfg org.kde.Akonadi.Git.Settings)
 
