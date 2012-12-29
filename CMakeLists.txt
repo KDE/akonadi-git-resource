@@ -11,7 +11,7 @@ set_package_properties(Libgit2 PROPERTIES DESCRIPTION "LibGit library" URL "http
 find_package(Akonadi QUIET CONFIG)
 set_package_properties(Akonadi PROPERTIES DESCRIPTION "Akonadi server libraries" URL "http://pim.kde.org/akonadi" TYPE REQUIRED PURPOSE "Akonadi is required to build the GIT resource")
 
-find_package(KDE4 REQUIRED)
+find_package(KDE4 4.9.4 REQUIRED)
 include(KDE4Defaults)
 
 find_package(KdepimLibs 4.8.0)
