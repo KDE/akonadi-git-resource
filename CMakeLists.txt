@@ -5,7 +5,7 @@ include(FeatureSummary)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
-find_package(Libgit2 0.17.0 EXACT)
+find_package(Libgit2 0.17.0)
 set_package_properties(Libgit2 PROPERTIES DESCRIPTION "LibGit library" URL "http://libgit2.github.com/" TYPE REQUIRED)
 
 find_package(Akonadi QUIET CONFIG)
